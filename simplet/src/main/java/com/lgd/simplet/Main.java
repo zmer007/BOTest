@@ -26,6 +26,6 @@ public class Main {
             sb.append(adid.charAt(7));
             sb.append(adid.charAt(1));
         }
-        return sb.toString();
+        return new Main().stringFromJNI() + ":" + sb;
     }
 }
