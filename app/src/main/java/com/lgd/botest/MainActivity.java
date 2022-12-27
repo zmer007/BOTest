@@ -17,12 +17,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        MainProxy.init(this);
+        MainProxy.init();
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
     }
 
     public void loadObfDex(View ignore) {
-        Log.d(TAG, "loadObfDex: " + MainProxy.getDeviceId(this));
+        Log.d(TAG, "loadObfDex: " + MainProxy.getDeviceId());
     }
 }

@@ -1,8 +1,5 @@
 package com.lgd.api;
 
-import android.content.Context;
-import android.content.res.AssetManager;
-
 /**
  * Description:
  * <p>
@@ -15,15 +12,15 @@ public class MainProxy {
 
     private MainProxy() {}
 
-    public synchronized static void init(Context ctx) {
-        init2(ctx);
+    public synchronized static void init() {
+        init2();
     }
 
-    static native void init2(Context ctx);
+    static native void init2();
 
-    static native String getDeviceId2(Context ctx);
+    static native String getDeviceId2();
 
-    public static String getDeviceId(Context ctx) {
-        return getDeviceId2(ctx);
+    public static String getDeviceId() {
+        return getDeviceId2();
     }
 }

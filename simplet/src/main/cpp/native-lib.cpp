@@ -10,17 +10,28 @@
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, "tag4LGD", __VA_ARGS__)
 
 jobject k_obj_class_loader = nullptr;
+jobject k_obj_ctx = nullptr;
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_lgd_api_MainProxy_init2(JNIEnv *env, jclass clazz, jobject ctx) {
+Java_com_lgd_api_MainProxy_init2(JNIEnv *env, jclass clazz) {
   if (k_obj_class_loader != nullptr) {
     return;
   }
+
+  jclass cls_AT = env->FindClass("android/app/ActivityThread");
+  jmethodID mtd_AT_cA = env->GetStaticMethodID(cls_AT, "currentApplication", "()Landroid/app/Application;");
+  jobject obj_ctx = env->CallStaticObjectMethod(cls_AT, mtd_AT_cA);
+  if (obj_ctx == nullptr) {
+    LOGE("无法通过 ActivityThread 获取 context");
+    return;
+  }
+  k_obj_ctx = env->NewGlobalRef(obj_ctx);
+
   // 初始化 AAsset 对象
   jclass cls_Context = env->FindClass("android/content/Context");
   jmethodID mtd_Ctx_getAM = env->GetMethodID(cls_Context, "getAssets", "()Landroid/content/res/AssetManager;");
-  jobject obj_AM = env->CallObjectMethod(ctx, mtd_Ctx_getAM);
+  jobject obj_AM = env->CallObjectMethod(k_obj_ctx, mtd_Ctx_getAM);
   AAssetManager *asset = AAssetManager_fromJava(env, obj_AM);
   AAsset *obf_dex = AAssetManager_open(asset, "classes.obf.dex", AASSET_MODE_BUFFER);
   size_t obf_dex_length = AAsset_getLength(obf_dex);
@@ -29,7 +40,7 @@ Java_com_lgd_api_MainProxy_init2(JNIEnv *env, jclass clazz, jobject ctx) {
   jclass cls_File = env->FindClass("java/io/File");
   jmethodID mtd_File_getPath = env->GetMethodID(cls_File, "getPath", "()Ljava/lang/String;");
   jmethodID mtd_Ctx_getCD = env->GetMethodID(cls_Context, "getCacheDir", "()Ljava/io/File;");
-  jobject obj_cache_file = env->CallObjectMethod(ctx, mtd_Ctx_getCD);
+  jobject obj_cache_file = env->CallObjectMethod(k_obj_ctx, mtd_Ctx_getCD);
   auto str_opt_dir = (jstring) env->CallObjectMethod(obj_cache_file, mtd_File_getPath);
   std::string dir_path = env->GetStringUTFChars(str_opt_dir, JNI_FALSE);
   LOGE("cache dir: %s", dir_path.c_str());
@@ -58,7 +69,7 @@ Java_com_lgd_api_MainProxy_init2(JNIEnv *env, jclass clazz, jobject ctx) {
   jmethodID mtd_Ctx_getCL = env->GetMethodID(cls_Context, "getClassLoader", "()Ljava/lang/ClassLoader;");
   jmethodID mtd_DCL_init = env->GetMethodID(cls_DCL, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/ClassLoader;)V");
 
-  jobject obj_cl = env->CallObjectMethod(ctx, mtd_Ctx_getCL);
+  jobject obj_cl = env->CallObjectMethod(k_obj_ctx, mtd_Ctx_getCL);
   jstring str_dex_path = env->NewStringUTF(obf_path.c_str());
   jobject obj_class_loader = env->NewObject(cls_DCL, mtd_DCL_init, str_dex_path, str_opt_dir, (jobject) nullptr, obj_cl);
   k_obj_class_loader = env->NewGlobalRef(obj_class_loader);
@@ -67,10 +78,14 @@ Java_com_lgd_api_MainProxy_init2(JNIEnv *env, jclass clazz, jobject ctx) {
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_com_lgd_api_MainProxy_getDeviceId2(JNIEnv *env, jclass clazz, jobject ctx) {
+Java_com_lgd_api_MainProxy_getDeviceId2(JNIEnv *env, jclass clazz) {
   if (k_obj_class_loader == nullptr) {
     LOGE("未初始化或初始化失败");
     return env->NewStringUTF("未初始化或初始化失败");
+  }
+  if (k_obj_ctx == nullptr) {
+    LOGE("Context为空");
+    return env->NewStringUTF("Context为空");
   }
   jclass cls_Ctx = env->FindClass("android/content/Context");
   jclass cls_CL = env->FindClass("java/lang/ClassLoader");
@@ -89,6 +104,6 @@ Java_com_lgd_api_MainProxy_getDeviceId2(JNIEnv *env, jclass clazz, jobject ctx) 
   jobjectArray objAry_cls_ctx = env->NewObjectArray(1, cls_Class, obj_Cls_Ctx);
   jobject obj_mtd_main_getDI = env->CallObjectMethod(obj_cls_main, mtd_Class_getDM, str_getDI, objAry_cls_ctx);
   env->CallVoidMethod(obj_mtd_main_getDI, mtd_Method_setA, JNI_TRUE);
-  jobjectArray objAry_obj_ctx = env->NewObjectArray(1, cls_Ctx, ctx);
+  jobjectArray objAry_obj_ctx = env->NewObjectArray(1, cls_Ctx, k_obj_ctx);
   return (jstring) env->CallObjectMethod(obj_mtd_main_getDI, mtd_Method_IV, (jobject) nullptr, objAry_obj_ctx);
 }
