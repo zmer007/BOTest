@@ -1,0 +1,13 @@
+#it is annotation
+#cn.kaicity
+
+#class
+com.lgd.simplet.BuildConfig
+
+#package
+com.lgd.simplet
+
+#blackList
+!com.lgd.api
+
+#blackList中的包或者类不会进行混淆
