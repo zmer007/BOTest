@@ -20,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
         MainProxy.init();
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        Log.d(TAG, "loadObfDex: " + MainProxy.getDeviceId());
     }
 
     public void loadObfDex(View ignore) {
