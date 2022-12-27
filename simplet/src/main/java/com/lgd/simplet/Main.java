@@ -9,12 +9,6 @@ import android.provider.Settings;
  * Created by lgd on 2022/12/20.
  */
 public class Main {
-    static {
-        System.loadLibrary("simplet");
-    }
-
-    public native String stringFromJNI();
-
     public static String getDeviceId(Context ctx) {
         StringBuilder sb = new StringBuilder();
         String adid = Settings.System.getString(ctx.getContentResolver(), "android_id");
@@ -26,6 +20,6 @@ public class Main {
             sb.append(adid.charAt(7));
             sb.append(adid.charAt(1));
         }
-        return new Main().stringFromJNI() + ":" + sb;
+        return "loadFromJNI: " + sb;
     }
 }

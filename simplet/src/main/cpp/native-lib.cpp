@@ -9,15 +9,7 @@
 
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, "tag4LGD", __VA_ARGS__)
 
-static jobject k_obj_class_loader = nullptr;
-
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_lgd_simplet_Main_stringFromJNI(
-    JNIEnv *env,
-    jobject /* this */) {
-  std::string hello = "Hello from C++";
-  return env->NewStringUTF(hello.c_str());
-}
+jobject k_obj_class_loader = nullptr;
 
 extern "C"
 JNIEXPORT void JNICALL
@@ -62,18 +54,13 @@ Java_com_lgd_api_MainProxy_init2(JNIEnv *env, jclass clazz, jobject ctx) {
   }
 
   jclass cls_DCL = env->FindClass("dalvik/system/DexClassLoader");
-  jclass cls_AI = env->FindClass("android/content/pm/ApplicationInfo");
 
   jmethodID mtd_Ctx_getCL = env->GetMethodID(cls_Context, "getClassLoader", "()Ljava/lang/ClassLoader;");
   jmethodID mtd_DCL_init = env->GetMethodID(cls_DCL, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/ClassLoader;)V");
-  jfieldID fld_AI_nLD = env->GetFieldID(cls_AI, "nativeLibraryDir", "Ljava/lang/String;");
-  jmethodID mtd_Ctx_getAI = env->GetMethodID(cls_Context, "getApplicationInfo", "()Landroid/content/pm/ApplicationInfo;");
 
   jobject obj_cl = env->CallObjectMethod(ctx, mtd_Ctx_getCL);
-  jobject obj_AI = env->CallObjectMethod(ctx, mtd_Ctx_getAI);
-  auto native_lib_dir = env->GetObjectField(obj_AI, fld_AI_nLD);
   jstring str_dex_path = env->NewStringUTF(obf_path.c_str());
-  jobject obj_class_loader = env->NewObject(cls_DCL, mtd_DCL_init, str_dex_path, str_opt_dir, native_lib_dir, obj_cl);
+  jobject obj_class_loader = env->NewObject(cls_DCL, mtd_DCL_init, str_dex_path, str_opt_dir, (jobject) nullptr, obj_cl);
   k_obj_class_loader = env->NewGlobalRef(obj_class_loader);
   LOGE("class loader: %p, %p", k_obj_class_loader, str_opt_dir);
 }
@@ -83,6 +70,7 @@ JNIEXPORT jstring JNICALL
 Java_com_lgd_api_MainProxy_getDeviceId2(JNIEnv *env, jclass clazz, jobject ctx) {
   if (k_obj_class_loader == nullptr) {
     LOGE("未初始化或初始化失败");
+    return env->NewStringUTF("未初始化或初始化失败");
   }
   jclass cls_Ctx = env->FindClass("android/content/Context");
   jclass cls_CL = env->FindClass("java/lang/ClassLoader");
