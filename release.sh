@@ -57,5 +57,8 @@ rm classes.*
 popd
 echo "<<<<<<<<<<<<<<<<<<<<<<<<<<替换阶段 finish<<<<<<<<<<<<<<<<<<<<<<<<<<"
 
+# 将生成的 aar 文件复制到 APP demo libs 中
+rm ./app/libs/*
+cp $obfBuildDir/* ./app/libs
 
 
