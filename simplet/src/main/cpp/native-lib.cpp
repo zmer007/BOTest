@@ -12,9 +12,40 @@
 jobject k_obj_class_loader = nullptr;
 jobject k_obj_ctx = nullptr;
 
+#define positive_sp_predicate_arm  \
+  __asm__ (                        \
+  " push {r6} \n"                  \
+  " mov r6, 0 \n"                  \
+  " mov pc, pc\n"                  \
+  " add sp, #13 \n"                \
+  " pop {r6}"                         \
+  )
+void GccInlineArmTest02() {
+#ifdef __i386__
+#endif
+}
+
+void GccInlineArmTest01() {
+#ifdef __arm__
+  positive_sp_predicate_arm;
+  int x = 0b10;
+  int y1 = 0;
+  int y2 = 0;
+  // 将 value 内容玄幻右移 1 位，传送到 result 中
+  asm (
+  "mov %[result1], %[value], ror #1\n\t"
+  : [result1] "=r"(y1)
+  : [value] "r"(x));
+  LOGE("asm fake: %d, %d, %d", x, y1, y2); // 输出值：asm: 2, 1
+  LOGE("asm real: %d, %d, %d", x, y1, y2); // 输出值：asm: 2, 1
+#endif
+}
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_lgd_api_MainProxy_init2(JNIEnv *env, jclass clazz) {
+  GccInlineArmTest01();
+  GccInlineArmTest02();
   if (k_obj_class_loader != nullptr) {
     return;
   }

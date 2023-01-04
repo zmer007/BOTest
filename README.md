@@ -21,3 +21,7 @@
 
 ### 3 BlackObfuscator 工作原理
 
+### 参考文档
+1. https://github.com/baidurom/tutorials/blob/master/Tutor-Smali-Grammar.pdf
+1. https://www.cnblogs.com/willhua/p/9692529.html
+
